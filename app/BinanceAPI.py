@@ -14,10 +14,15 @@ class BinanceAPI:
     BASE_URL = "https://www.binance.com/api/v1"
     BASE_URL_V3 = "https://api.binance.com/api/v3"
     PUBLIC_URL = "https://www.binance.com/exchange/public/product"
+    PROXIES = {
+        "http": "socks5://127.0.0.1:1086",
+        'https': 'socks5://127.0.0.1:1086'
+    }
 
     def __init__(self, key, secret):
         self.key = key
         self.secret = secret
+
 
     def get_history(self, market, limit=50):
         path = "%s/historicalTrades" % self.BASE_URL
@@ -49,11 +54,11 @@ class BinanceAPI:
         return self._get(path, {})
 
     def get_products(self):
-        return requests.get(self.PUBLIC_URL, timeout=30, verify=True).json()
+        return requests.get(self.PUBLIC_URL, timeout=30, verify=True, proxies=self.PROXIES).json()
         
     def get_exchange_info(self):
         path = "%s/exchangeInfo" % self.BASE_URL
-        return requests.get(path, timeout=30, verify=True).json()
+        return requests.get(path, timeout=30, verify=True, proxies=self.PROXIES).json()
 
     def get_open_orders(self, market, limit = 100):
         path = "%s/openOrders" % self.BASE_URL_V3
@@ -98,7 +103,7 @@ class BinanceAPI:
     def _get_no_sign(self, path, params={}):
         query = urlencode(params)
         url = "%s?%s" % (path, query)
-        return requests.get(url, timeout=30, verify=True).json()
+        return requests.get(url, timeout=30, verify=True, proxies=self.PROXIES).json()
     
     def _sign(self, params={}):
         data = params.copy()
@@ -118,7 +123,7 @@ class BinanceAPI:
         query = urlencode(self._sign(params))
         url = "%s?%s" % (path, query)
         header = {"X-MBX-APIKEY": self.key}
-        return requests.get(url, headers=header, \
+        return requests.get(url, headers=header, proxies=self.PROXIES,
             timeout=30, verify=True).json()
 
     def _post(self, path, params={}):
@@ -126,7 +131,7 @@ class BinanceAPI:
         query = urlencode(self._sign(params))
         url = "%s?%s" % (path, query)
         header = {"X-MBX-APIKEY": self.key}
-        return requests.post(url, headers=header, \
+        return requests.post(url, headers=header, proxies=self.PROXIES,
             timeout=30, verify=True).json()
 
     def _order(self, market, quantity, side, rate=None):
@@ -154,4 +159,4 @@ class BinanceAPI:
         url = "%s?%s" % (path, query)
         header = {"X-MBX-APIKEY": self.key}
         return requests.delete(url, headers=header, \
-            timeout=30, verify=True).json()
+            timeout=30, verify=True, proxies=self.PROXIES).json()
